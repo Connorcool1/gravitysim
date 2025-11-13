@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/connor/code/gravitysim/build"
+			"value" : "/home/connor/Documents/code/gravitysim/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -155,10 +155,10 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "CXX compiler"
+					"value" : "No help, variable specified on the command line."
 				}
 			],
-			"type" : "STRING",
+			"type" : "FILEPATH",
 			"value" : "/usr/bin/g++"
 		},
 		{
@@ -283,10 +283,10 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "C compiler"
+					"value" : "No help, variable specified on the command line."
 				}
 			],
-			"type" : "STRING",
+			"type" : "FILEPATH",
 			"value" : "/usr/bin/gcc"
 		},
 		{
@@ -543,7 +543,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/code/gravitysim/build/CMakeFiles/pkgRedirects"
+			"value" : "/home/connor/Documents/code/gravitysim/build/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -603,7 +603,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/connor/code/gravitysim"
+			"value" : "/home/connor/Documents/code/gravitysim"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1443,7 +1443,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/code/gravitysim/build"
+			"value" : "/home/connor/Documents/code/gravitysim/build"
 		},
 		{
 			"name" : "gravitysim_IS_TOP_LEVEL",
@@ -1467,7 +1467,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/code/gravitysim"
+			"value" : "/home/connor/Documents/code/gravitysim"
 		}
 	],
 	"kind" : "cache",

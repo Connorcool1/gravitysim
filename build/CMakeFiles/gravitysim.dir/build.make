@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/connor/code/gravitysim
+CMAKE_SOURCE_DIR = /home/connor/Documents/code/gravitysim
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/connor/code/gravitysim/build
+CMAKE_BINARY_DIR = /home/connor/Documents/code/gravitysim/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/gravitysim.dir/depend.make
@@ -69,50 +69,50 @@ include CMakeFiles/gravitysim.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/gravitysim.dir/flags.make
 
-CMakeFiles/gravitysim.dir/src/main.cpp.o: CMakeFiles/gravitysim.dir/flags.make
-CMakeFiles/gravitysim.dir/src/main.cpp.o: /home/connor/code/gravitysim/src/main.cpp
-CMakeFiles/gravitysim.dir/src/main.cpp.o: CMakeFiles/gravitysim.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/connor/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gravitysim.dir/src/main.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravitysim.dir/src/main.cpp.o -MF CMakeFiles/gravitysim.dir/src/main.cpp.o.d -o CMakeFiles/gravitysim.dir/src/main.cpp.o -c /home/connor/code/gravitysim/src/main.cpp
-
-CMakeFiles/gravitysim.dir/src/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gravitysim.dir/src/main.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/connor/code/gravitysim/src/main.cpp > CMakeFiles/gravitysim.dir/src/main.cpp.i
-
-CMakeFiles/gravitysim.dir/src/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gravitysim.dir/src/main.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/connor/code/gravitysim/src/main.cpp -o CMakeFiles/gravitysim.dir/src/main.cpp.s
-
 CMakeFiles/gravitysim.dir/src/glad.c.o: CMakeFiles/gravitysim.dir/flags.make
-CMakeFiles/gravitysim.dir/src/glad.c.o: /home/connor/code/gravitysim/src/glad.c
+CMakeFiles/gravitysim.dir/src/glad.c.o: /home/connor/Documents/code/gravitysim/src/glad.c
 CMakeFiles/gravitysim.dir/src/glad.c.o: CMakeFiles/gravitysim.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/connor/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/gravitysim.dir/src/glad.c.o"
-	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/gravitysim.dir/src/glad.c.o -MF CMakeFiles/gravitysim.dir/src/glad.c.o.d -o CMakeFiles/gravitysim.dir/src/glad.c.o -c /home/connor/code/gravitysim/src/glad.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/connor/Documents/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/gravitysim.dir/src/glad.c.o"
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/gravitysim.dir/src/glad.c.o -MF CMakeFiles/gravitysim.dir/src/glad.c.o.d -o CMakeFiles/gravitysim.dir/src/glad.c.o -c /home/connor/Documents/code/gravitysim/src/glad.c
 
 CMakeFiles/gravitysim.dir/src/glad.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/gravitysim.dir/src/glad.c.i"
-	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/connor/code/gravitysim/src/glad.c > CMakeFiles/gravitysim.dir/src/glad.c.i
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/connor/Documents/code/gravitysim/src/glad.c > CMakeFiles/gravitysim.dir/src/glad.c.i
 
 CMakeFiles/gravitysim.dir/src/glad.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/gravitysim.dir/src/glad.c.s"
-	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/connor/code/gravitysim/src/glad.c -o CMakeFiles/gravitysim.dir/src/glad.c.s
+	/usr/bin/gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/connor/Documents/code/gravitysim/src/glad.c -o CMakeFiles/gravitysim.dir/src/glad.c.s
+
+CMakeFiles/gravitysim.dir/src/main.cpp.o: CMakeFiles/gravitysim.dir/flags.make
+CMakeFiles/gravitysim.dir/src/main.cpp.o: /home/connor/Documents/code/gravitysim/src/main.cpp
+CMakeFiles/gravitysim.dir/src/main.cpp.o: CMakeFiles/gravitysim.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/connor/Documents/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/gravitysim.dir/src/main.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravitysim.dir/src/main.cpp.o -MF CMakeFiles/gravitysim.dir/src/main.cpp.o.d -o CMakeFiles/gravitysim.dir/src/main.cpp.o -c /home/connor/Documents/code/gravitysim/src/main.cpp
+
+CMakeFiles/gravitysim.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gravitysim.dir/src/main.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/connor/Documents/code/gravitysim/src/main.cpp > CMakeFiles/gravitysim.dir/src/main.cpp.i
+
+CMakeFiles/gravitysim.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gravitysim.dir/src/main.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/connor/Documents/code/gravitysim/src/main.cpp -o CMakeFiles/gravitysim.dir/src/main.cpp.s
 
 # Object files for target gravitysim
 gravitysim_OBJECTS = \
-"CMakeFiles/gravitysim.dir/src/main.cpp.o" \
-"CMakeFiles/gravitysim.dir/src/glad.c.o"
+"CMakeFiles/gravitysim.dir/src/glad.c.o" \
+"CMakeFiles/gravitysim.dir/src/main.cpp.o"
 
 # External object files for target gravitysim
 gravitysim_EXTERNAL_OBJECTS =
 
-gravitysim: CMakeFiles/gravitysim.dir/src/main.cpp.o
 gravitysim: CMakeFiles/gravitysim.dir/src/glad.c.o
+gravitysim: CMakeFiles/gravitysim.dir/src/main.cpp.o
 gravitysim: CMakeFiles/gravitysim.dir/build.make
 gravitysim: /usr/lib/x86_64-linux-gnu/libglfw.so.3.3
 gravitysim: /usr/lib/x86_64-linux-gnu/libGLX.so
 gravitysim: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 gravitysim: CMakeFiles/gravitysim.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/connor/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable gravitysim"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/connor/Documents/code/gravitysim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable gravitysim"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gravitysim.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -124,6 +124,6 @@ CMakeFiles/gravitysim.dir/clean:
 .PHONY : CMakeFiles/gravitysim.dir/clean
 
 CMakeFiles/gravitysim.dir/depend:
-	cd /home/connor/code/gravitysim/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/connor/code/gravitysim /home/connor/code/gravitysim /home/connor/code/gravitysim/build /home/connor/code/gravitysim/build /home/connor/code/gravitysim/build/CMakeFiles/gravitysim.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/connor/Documents/code/gravitysim/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/connor/Documents/code/gravitysim /home/connor/Documents/code/gravitysim /home/connor/Documents/code/gravitysim/build /home/connor/Documents/code/gravitysim/build /home/connor/Documents/code/gravitysim/build/CMakeFiles/gravitysim.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/gravitysim.dir/depend
 

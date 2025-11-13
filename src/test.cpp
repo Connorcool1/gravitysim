@@ -14,7 +14,6 @@ const float windowHeight = 1000;
 const float windowWidth = 1000;
 
 std::vector<glm::vec3> vertices;
-std::vector<unsigned int> indices;
 
 class Object {
     public:
@@ -60,50 +59,12 @@ class Object {
         glDrawArrays(GL_TRIANGLES, startIndex, vertexCount);
     }
 
-    static std::vector<Object> generate(int amount, 
-                         std::vector<float> posRange = std::vector<float>{50.0f,windowWidth-50.0f,50.0f,windowHeight-50.0f},
-                         std::vector<float> velRange = std::vector<float>{0, 0}, 
-                         std::vector<float> rRange = std::vector<float>{4.0f, 10.0f}, 
-                                      float mass = 6.0f*pow(10.0f, 22.0f)) {
-        std::vector<Object> balls;
-        balls.reserve(amount);
-        std::mt19937 rng((unsigned)std::random_device{}());
-        std::uniform_real_distribution<float> px(posRange[0], posRange[1]);
-        std::uniform_real_distribution<float> py(posRange[2], posRange[3]);
-        std::uniform_real_distribution<float> rv(velRange[0], velRange[1]);
-        std::uniform_real_distribution<float> rr(rRange[0], rRange[1]);
-
-        for (int i = 0; i < amount; ++i) {
-            float radius = rr(rng);
-            float x, y;
-            int attempts = 0;
-            bool placed = false;
-            // simple non-overlap attempt
-            while (attempts < 50 && !placed) {
-                x = px(rng);
-                y = py(rng);
-                placed = true;
-                for (const auto &other : balls) {
-                    float dx = other.pos[0] - x;
-                    float dy = other.pos[1] - y;
-                    float d = std::sqrt(dx*dx + dy*dy);
-                    if (d < (other.radius + radius + 2.0f)) { placed = false; break; }
-                }
-                ++attempts;
-            }
-            float vx = rv(rng);
-            float vy = rv(rng);
-            balls.emplace_back(std::vector<float>{x, y}, std::vector<float>{vx, vy}, radius, mass);
-        }
-        return balls;
-    }
-
     private:
     int startIndex = 0;
     int vertexCount = 0;
 
     int vCount = 100;    
-    float dampening = 1000;
+    float dampening = 100;
     
     bool allowCollision = true;
     
@@ -189,9 +150,39 @@ int main() {
 
     // };
     // make random balls
-    std::vector<Object> objs = Object::generate(3);
-    objs.emplace_back(Object(std::vector<float>{500,500}, std::vector<float>{0,0}, 30.0f, 6 * pow(10,24)));
+    int ballCount = 50;
+    std::vector<Object> objs;
+    objs.reserve(ballCount);
+    std::mt19937 rng((unsigned)std::random_device{}());
+    std::uniform_real_distribution<float> px(50.0f, windowWidth - 50.0f);
+    std::uniform_real_distribution<float> py(50.0f, windowHeight - 50.0f);
+    std::uniform_real_distribution<float> rv(-60.0f, 60.0f);
+    std::uniform_real_distribution<float> rr(4.0f, 10.0f);
+    const float defaultMass = 6.0f * pow(10.0f, 22.0f);
 
+    for (int i = 0; i < ballCount; ++i) {
+        float radius = rr(rng);
+        float x, y;
+        int attempts = 0;
+        bool placed = false;
+        // simple non-overlap attempt
+        while (attempts < 50 && !placed) {
+            x = px(rng);
+            y = py(rng);
+            placed = true;
+            for (const auto &other : objs) {
+                float dx = other.pos[0] - x;
+                float dy = other.pos[1] - y;
+                float d = std::sqrt(dx*dx + dy*dy);
+                if (d < (other.radius + radius + 2.0f)) { placed = false; break; }
+            }
+            ++attempts;
+        }
+        float vx = rv(rng);
+        float vy = rv(rng);
+        objs.emplace_back(std::vector<float>{x, y}, std::vector<float>{vx, vy}, radius, defaultMass);
+    }
+    
     // soo much graphics code
     Shader shader("shader.vs", "shader.fs");
 

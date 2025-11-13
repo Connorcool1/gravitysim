@@ -5,8 +5,8 @@ find_package(glfw3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 add_executable(gravitysim 
-    src/main.cpp 
     src/glad.c
+    src/main.cpp
 )
 
 target_link_libraries(gravitysim glfw OpenGL::GL)

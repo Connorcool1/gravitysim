@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "gravitysim::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-gravitysim-Debug-8ab2fb63c3b56ce010db.json",
+					"jsonFile" : "target-gravitysim-Debug-488e37f78bfa92ea08e3.json",
 					"name" : "gravitysim",
 					"projectIndex" : 0
 				}
@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/connor/code/gravitysim/build",
-		"source" : "/home/connor/code/gravitysim"
+		"build" : "/home/connor/Documents/code/gravitysim/build",
+		"source" : "/home/connor/Documents/code/gravitysim"
 	},
 	"version" : 
 	{

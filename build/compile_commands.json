@@ -1,14 +1,14 @@
 [
 {
-  "directory": "/home/connor/code/gravitysim/build",
-  "command": "/usr/bin/g++  -I/home/connor/code/gravitysim/include -g -o CMakeFiles/gravitysim.dir/src/main.cpp.o -c /home/connor/code/gravitysim/src/main.cpp",
-  "file": "/home/connor/code/gravitysim/src/main.cpp",
-  "output": "CMakeFiles/gravitysim.dir/src/main.cpp.o"
+  "directory": "/home/connor/Documents/code/gravitysim/build",
+  "command": "/usr/bin/gcc  -I/home/connor/Documents/code/gravitysim/include -g -o CMakeFiles/gravitysim.dir/src/glad.c.o -c /home/connor/Documents/code/gravitysim/src/glad.c",
+  "file": "/home/connor/Documents/code/gravitysim/src/glad.c",
+  "output": "CMakeFiles/gravitysim.dir/src/glad.c.o"
 },
 {
-  "directory": "/home/connor/code/gravitysim/build",
-  "command": "/usr/bin/gcc  -I/home/connor/code/gravitysim/include -g -o CMakeFiles/gravitysim.dir/src/glad.c.o -c /home/connor/code/gravitysim/src/glad.c",
-  "file": "/home/connor/code/gravitysim/src/glad.c",
-  "output": "CMakeFiles/gravitysim.dir/src/glad.c.o"
+  "directory": "/home/connor/Documents/code/gravitysim/build",
+  "command": "/usr/bin/g++  -I/home/connor/Documents/code/gravitysim/include -g -o CMakeFiles/gravitysim.dir/src/main.cpp.o -c /home/connor/Documents/code/gravitysim/src/main.cpp",
+  "file": "/home/connor/Documents/code/gravitysim/src/main.cpp",
+  "output": "CMakeFiles/gravitysim.dir/src/main.cpp.o"
 }
 ]
