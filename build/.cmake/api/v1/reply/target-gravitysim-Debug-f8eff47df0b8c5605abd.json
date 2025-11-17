@@ -82,7 +82,7 @@
 			[
 				{
 					"backtrace" : 7,
-					"path" : "/home/connor/Documents/code/gravitysim/include"
+					"path" : "/home/connor/code/gravitysim/include"
 				}
 			],
 			"language" : "C",
@@ -102,7 +102,7 @@
 			[
 				{
 					"backtrace" : 7,
-					"path" : "/home/connor/Documents/code/gravitysim/include"
+					"path" : "/home/connor/code/gravitysim/include"
 				}
 			],
 			"language" : "CXX",
@@ -172,7 +172,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 1,
-			"path" : "src/main.cpp",
+			"path" : "src/test.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

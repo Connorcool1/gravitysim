@@ -14,6 +14,15 @@ const float windowHeight = 1000;
 const float windowWidth = 1000;
 
 std::vector<glm::vec3> vertices;
+std::vector<unsigned int> indices;
+
+// camera
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);    
+glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 class Object {
     public:
@@ -59,12 +68,50 @@ class Object {
         glDrawArrays(GL_TRIANGLES, startIndex, vertexCount);
     }
 
+    static std::vector<Object> generate(int amount, 
+                         std::vector<float> posRange = std::vector<float>{50.0f,windowWidth-50.0f,50.0f,windowHeight-50.0f},
+                         std::vector<float> velRange = std::vector<float>{0, 0}, 
+                         std::vector<float> rRange = std::vector<float>{4.0f, 10.0f}, 
+                                      float mass = 6.0f*pow(10.0f, 22.0f)) {
+        std::vector<Object> balls;
+        balls.reserve(amount);
+        std::mt19937 rng((unsigned)std::random_device{}());
+        std::uniform_real_distribution<float> px(posRange[0], posRange[1]);
+        std::uniform_real_distribution<float> py(posRange[2], posRange[3]);
+        std::uniform_real_distribution<float> rv(velRange[0], velRange[1]);
+        std::uniform_real_distribution<float> rr(rRange[0], rRange[1]);
+
+        for (int i = 0; i < amount; ++i) {
+            float radius = rr(rng);
+            float x, y;
+            int attempts = 0;
+            bool placed = false;
+            // simple non-overlap attempt
+            while (attempts < 50 && !placed) {
+                x = px(rng);
+                y = py(rng);
+                placed = true;
+                for (const auto &other : balls) {
+                    float dx = other.pos[0] - x;
+                    float dy = other.pos[1] - y;
+                    float d = std::sqrt(dx*dx + dy*dy);
+                    if (d < (other.radius + radius + 2.0f)) { placed = false; break; }
+                }
+                ++attempts;
+            }
+            float vx = rv(rng);
+            float vy = rv(rng);
+            balls.emplace_back(std::vector<float>{x, y}, std::vector<float>{vx, vy}, radius, mass);
+        }
+        return balls;
+    }
+
     private:
     int startIndex = 0;
     int vertexCount = 0;
 
     int vCount = 100;    
-    float dampening = 100;
+    float dampening = 1000;
     
     bool allowCollision = true;
     
@@ -115,6 +162,17 @@ class Object {
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    const float cameraSpeed = 2.5f * deltaTime;
+    if (!glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (!glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (!glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (!glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    
 }
 
 int main() {
@@ -140,8 +198,6 @@ int main() {
         return -1;
     }
 
-    glm::mat4 projection = glm::ortho(0.0f, windowWidth, windowHeight, 0.0f, -1.0f, 1.0f);
-
     // std::vector<Object> objs = {
     //     Object(std::vector<float>{500,400}, std::vector<float>{100.0f,0.0f}, 5.0f, 6 * pow(10, 22)),
     //     Object(std::vector<float>{500,600}, std::vector<float>{-100.0f,0.0f}, 5.0f, 6 * pow(10, 22)),
@@ -150,39 +206,27 @@ int main() {
 
     // };
     // make random balls
-    int ballCount = 50;
-    std::vector<Object> objs;
-    objs.reserve(ballCount);
-    std::mt19937 rng((unsigned)std::random_device{}());
-    std::uniform_real_distribution<float> px(50.0f, windowWidth - 50.0f);
-    std::uniform_real_distribution<float> py(50.0f, windowHeight - 50.0f);
-    std::uniform_real_distribution<float> rv(-60.0f, 60.0f);
-    std::uniform_real_distribution<float> rr(4.0f, 10.0f);
-    const float defaultMass = 6.0f * pow(10.0f, 22.0f);
+    // std::vector<Object> objs = Object::generate(3);
+    // objs.emplace_back(Object(std::vector<float>{500,500}, std::vector<float>{0,0}, 30.0f, 6 * pow(10,24)));
 
-    for (int i = 0; i < ballCount; ++i) {
-        float radius = rr(rng);
-        float x, y;
-        int attempts = 0;
-        bool placed = false;
-        // simple non-overlap attempt
-        while (attempts < 50 && !placed) {
-            x = px(rng);
-            y = py(rng);
-            placed = true;
-            for (const auto &other : objs) {
-                float dx = other.pos[0] - x;
-                float dy = other.pos[1] - y;
-                float d = std::sqrt(dx*dx + dy*dy);
-                if (d < (other.radius + radius + 2.0f)) { placed = false; break; }
-            }
-            ++attempts;
-        }
-        float vx = rv(rng);
-        float vy = rv(rng);
-        objs.emplace_back(std::vector<float>{x, y}, std::vector<float>{vx, vy}, radius, defaultMass);
-    }
-    
+    // vertices = std::vector<glm::vec3> {
+    //     glm::vec3(100.0f,  100.0f, 0.0f),
+    //     glm::vec3(100.0f, -100.0f, 0.0f),
+    //     glm::vec3(-100.0f, -100.0f, 0.0f),
+    //     glm::vec3(100.0f, 100.0f, 0.0f),
+    //     glm::vec3(-100.0f, -100.0f, 0.0f),
+    //     glm::vec3(-100.0f,  100.0f, 0.0f)
+    // };
+    vertices = std::vector<glm::vec3> {
+        // positions          // texture coords
+        glm::vec3( 0.5f,  0.5f, 0.0f), // top right
+        glm::vec3( 0.5f, -0.5f, 0.0f), // bottom right
+        glm::vec3(-0.5f, -0.5f, 0.0f), // bottom left
+        glm::vec3(-0.5f,  -0.5f, 0.0f),  // top left
+        glm::vec3(0.5f,  0.5f, 0.0f),  // top left
+        glm::vec3(-0.5f,  0.5f, 0.0f)  // top left
+    };
+
     // soo much graphics code
     Shader shader("shader.vs", "shader.fs");
 
@@ -204,40 +248,88 @@ int main() {
     const float G = 6.6743 * pow(10, -11);
 
     shader.use();
-    unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projection");
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+
+
+    const float radius = 10.0f;
+
+
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
+
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
         // Main loop content
         glClear(GL_COLOR_BUFFER_BIT);
         glBindVertexArray(VAO);
 
-        for(Object& obj : objs) {
-            for(Object& obj2 : objs) {
-                if (&obj == &obj2) {continue;};
-                float dx = obj2.pos[0] - obj.pos[0];
-                float dy = obj2.pos[1] - obj.pos[1];
-                float distance = sqrt(dx*dx + dy*dy);
-                std::vector<float> direction = {dx / distance, dy / distance};
-                if (distance < obj.radius *10) {continue;}
-                distance *= 1000;
+        // camera
 
-                float gf = (G * obj.mass * obj2.mass) / (distance * distance);
 
-                float totalAcc = gf / obj.mass;
-                std::vector<float> acc = {totalAcc * direction[0], totalAcc * direction[1]};
-                obj.accelerate(acc[0], acc[1]);
-            }
+        // glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
-            obj.updatePos();
-            obj.draw(shader);
-        }
+        // glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        // glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+
+        glm::mat4 view;
+
+        // mvp
+
+        glm::mat4 model = glm::mat4(1.0f);
+
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+        glm::mat4 projection = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        //projection = glm::ortho(0.0f, windowWidth, windowHeight, 0.0f, -500.0f, 500.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)windowWidth/(float)windowHeight, 0.1f, 100.0f);
+
+        unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
+        unsigned int viewLoc = glGetUniformLocation(shader.ID, "view");
+        unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projection");
+        
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        // for(Object& obj : objs) {
+        //     for(Object& obj2 : objs) {
+        //         if (&obj == &obj2) {continue;};
+        //         float dx = obj2.pos[0] - obj.pos[0];
+        //         float dy = obj2.pos[1] - obj.pos[1];
+        //         float distance = sqrt(dx*dx + dy*dy);
+        //         std::vector<float> direction = {dx / distance, dy / distance};
+        //         if (distance < obj.radius *10) {continue;}
+        //         distance *= 1000;
+
+        //         float gf = (G * obj.mass * obj2.mass) / (distance * distance);
+
+        //         float totalAcc = gf / obj.mass;
+        //         std::vector<float> acc = {totalAcc * direction[0], totalAcc * direction[1]};
+        //         obj.accelerate(acc[0], acc[1]);
+        //     }
+
+        //     obj.updatePos();
+        //     obj.draw(shader);
+        // }
+
+        // glm::mat4 transform = glm::mat4(1.0f);
+        // transform = glm::translate(transform, glm::vec3(200.0f, 200.0f, 0.0f));
+
+        // unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
+        // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+        glDrawArrays(GL_TRIANGLES, 0, 6); 
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
-
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;

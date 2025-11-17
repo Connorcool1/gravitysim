@@ -6,7 +6,7 @@ find_package(OpenGL REQUIRED)
 
 add_executable(gravitysim 
     src/glad.c
-    src/main.cpp
+    src/test.cpp
 )
 
 target_link_libraries(gravitysim glfw OpenGL::GL)

@@ -167,8 +167,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/home/connor/Documents/code/gravitysim/build",
-		"source" : "/home/connor/Documents/code/gravitysim"
+		"build" : "/home/connor/code/gravitysim/build",
+		"source" : "/home/connor/code/gravitysim"
 	},
 	"version" : 
 	{

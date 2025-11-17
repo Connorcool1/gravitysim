@@ -5,13 +5,13 @@
 # compile CXX with /usr/bin/g++
 C_DEFINES = 
 
-C_INCLUDES = -I/home/connor/Documents/code/gravitysim/include
+C_INCLUDES = -I/home/connor/code/gravitysim/include
 
 C_FLAGS = -g
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/connor/Documents/code/gravitysim/include
+CXX_INCLUDES = -I/home/connor/code/gravitysim/include
 
 CXX_FLAGS = -g
 

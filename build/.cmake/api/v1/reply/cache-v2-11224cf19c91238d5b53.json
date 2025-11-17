@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/connor/Documents/code/gravitysim/build"
+			"value" : "/home/connor/code/gravitysim/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -543,7 +543,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/Documents/code/gravitysim/build/CMakeFiles/pkgRedirects"
+			"value" : "/home/connor/code/gravitysim/build/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -603,7 +603,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/connor/Documents/code/gravitysim"
+			"value" : "/home/connor/code/gravitysim"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1443,7 +1443,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/Documents/code/gravitysim/build"
+			"value" : "/home/connor/code/gravitysim/build"
 		},
 		{
 			"name" : "gravitysim_IS_TOP_LEVEL",
@@ -1467,7 +1467,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/connor/Documents/code/gravitysim"
+			"value" : "/home/connor/code/gravitysim"
 		}
 	],
 	"kind" : "cache",

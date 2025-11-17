@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/connor/Documents/code/gravitysim
+CMAKE_SOURCE_DIR = /home/connor/code/gravitysim
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/connor/Documents/code/gravitysim/build
+CMAKE_BINARY_DIR = /home/connor/code/gravitysim/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/connor/Documents/code/gravitysim/build/CMakeFiles /home/connor/Documents/code/gravitysim/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/connor/code/gravitysim/build/CMakeFiles /home/connor/code/gravitysim/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/connor/Documents/code/gravitysim/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/connor/code/gravitysim/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -153,29 +153,29 @@ src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/glad.c.s
 .PHONY : src/glad.c.s
 
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
+src/test.o: src/test.cpp.o
+.PHONY : src/test.o
 
 # target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
+src/test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/test.cpp.o
+.PHONY : src/test.cpp.o
 
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
+src/test.i: src/test.cpp.i
+.PHONY : src/test.i
 
 # target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
+src/test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/test.cpp.i
+.PHONY : src/test.cpp.i
 
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
+src/test.s: src/test.cpp.s
+.PHONY : src/test.s
 
 # target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
+src/test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravitysim.dir/build.make CMakeFiles/gravitysim.dir/src/test.cpp.s
+.PHONY : src/test.cpp.s
 
 # Help Target
 help:
@@ -189,9 +189,9 @@ help:
 	@echo "... src/glad.o"
 	@echo "... src/glad.i"
 	@echo "... src/glad.s"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
+	@echo "... src/test.o"
+	@echo "... src/test.i"
+	@echo "... src/test.s"
 .PHONY : help
 
 
