@@ -21,6 +21,13 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);    
 glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
 
+float yaw = -90.0f;
+float pitch = 0.0f;
+float lastX =  1000.0f / 2.0;
+float lastY =  1000.0 / 2.0;
+bool firstMouse = true;
+
+// time
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -172,8 +179,41 @@ void processInput(GLFWwindow *window) {
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (!glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    
+
 }
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch = 89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+}
+
+
 
 int main() {
     GLFWwindow* window;
@@ -197,6 +237,10 @@ int main() {
         glfwTerminate();
         return -1;
     }
+
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 
     // std::vector<Object> objs = {
     //     Object(std::vector<float>{500,400}, std::vector<float>{100.0f,0.0f}, 5.0f, 6 * pow(10, 22)),
@@ -249,12 +293,6 @@ int main() {
 
     shader.use();
 
-
-
-    const float radius = 10.0f;
-
-
-
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -268,25 +306,22 @@ int main() {
         // camera
 
 
+
         // glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
         // glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
         // glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
 
-        glm::mat4 view;
-
         // mvp
 
         glm::mat4 model = glm::mat4(1.0f);
 
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
         glm::mat4 projection = glm::mat4(1.0f);
 
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         //projection = glm::ortho(0.0f, windowWidth, windowHeight, 0.0f, -500.0f, 500.0f);
         projection = glm::perspective(glm::radians(45.0f), (float)windowWidth/(float)windowHeight, 0.1f, 100.0f);
 
