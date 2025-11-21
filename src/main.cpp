@@ -18,6 +18,8 @@ std::vector<glm::vec3> normals;
 std::vector<unsigned int> indices;
 std::vector<unsigned int> lineIndices;
 
+std::vector<glm::vec3> gridVertices;
+
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 1000.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);    
@@ -34,6 +36,8 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const float PI = 3.141592654;
+const float c = 299792458; // speed of light in m/s
+const float G = 6.67430e-11; // gravitational constant
 
 class Object {
     public:
@@ -49,6 +53,10 @@ class Object {
         this->radius = radius;
         this->mass = mass;
         build();
+    }
+
+    glm::vec3 GetPos() const {
+        return glm::vec3(pos[0], pos[1], pos[2]);
     }
 
     // input in force
@@ -126,7 +134,7 @@ class Object {
     int vCount = 100;
     int sectorCount = 50;
     int stackCount = 50;    
-    float dampening = 1000;
+    float dampening = 150;
     
     bool allowCollision = false;
     
@@ -249,11 +257,79 @@ class Object {
     }
 };
 
+class Grid {
+    public:
+    float cellSize;
+    int cols;
+    int rows;
+
+    Grid(float width, float height, float cellSize) {
+        this->cellSize = cellSize;
+        this->cols = static_cast<int>(std::ceil(width / cellSize));
+        this->rows = static_cast<int>(std::ceil(height / cellSize));
+    }
+
+    void CreateGrid() {
+        float length = cols * cellSize;
+        float halfLength = length / 2.0f;
+        float y = -10.0f;
+        for (int zStep = 0; zStep <= cols + 1; zStep++) {
+            float z = zStep * cellSize;
+            for (int xStep = 0; xStep <= rows; xStep++) {
+                float xStart = xStep * cellSize;
+                float xEnd = xStart + cellSize;
+                gridVertices.push_back(glm::vec3(xStart - halfLength, y, z - halfLength));
+                gridVertices.push_back(glm::vec3(xEnd - halfLength, y, z - halfLength));
+            }
+        }
+        for (int xStep = 0; xStep <= rows + 1; xStep++) {
+            float x = xStep * cellSize;
+            for (int zStep = 0; zStep <= cols; zStep++) {
+                float zStart = zStep * cellSize;
+                float zEnd = zStart + cellSize;
+                gridVertices.push_back(glm::vec3(x - halfLength, y, zStart - halfLength));
+                gridVertices.push_back(glm::vec3(x - halfLength, y, zEnd - halfLength));
+            }
+        }
+    }
+
+    std::vector<glm::vec3> UpdateGrid(std::vector<glm::vec3> vertices, std::vector<Object> objs) {
+        // iterate by reference so we modify the vector elements rather than a copy
+        for (glm::vec3 &vertice : vertices) {
+            glm::vec3 totalDisplacement(0.0f);
+            for (const auto &obj : objs) {
+
+                glm::vec3 toObject = obj.GetPos() - vertice;
+                float distance = glm::length(toObject);
+                float distance_m = distance * 1000.0f;
+                float rs = (2*G*obj.mass)/(c*c);
+
+                float dz = 2 * sqrt(rs * (distance_m - rs));
+                totalDisplacement.y += dz * 2.0f;
+            }
+            // write the computed displacement back into the vertex
+            vertice.y -= totalDisplacement.y;
+        }
+        return vertices;
+    }
+
+    void Draw(Shader &shader) {
+        glm::mat4 model = glm::mat4(1.0f);
+
+        unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        glDrawArrays(GL_LINES, 0, gridVertices.size());
+    }
+};
+
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    const float cameraSpeed = 250.0f * deltaTime;
+    float cameraSpeed = 250.0f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        cameraSpeed *= 5.0f;
     if (!glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos -= cameraSpeed * cameraFront;
     if (!glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -330,13 +406,15 @@ int main() {
     //     Object(std::vector<float>{200,700}, std::vector<float>{0.0f,0.0f}, 5.0f, 6 * pow(10, 22)),
     //     Object(std::vector<float>{800,700}, std::vector<float>{0.0f,0.0f}, 5.0f, 6 * pow(10, 22))
 
+    std::vector<Object> objs;
     // };
     // make random balls
-    std::vector<Object> objs = Object::generate(5);
-    //objs.emplace_back(Object(std::vector<float>{500,500}, std::vector<float>{0,0}, 0.03f, 6 * pow(10,24)));
+    //std::vector<Object> objs = Object::generate(1);
+    objs.emplace_back(Object(std::vector<float>{0,0,-5.0f}, std::vector<float>{0,0}, 5.0f, 6 * pow(10,24)));
     //objs.emplace_back(Object(std::vector<float>{400,500}, std::vector<float>{0,0}, 0.03f, 6 * pow(10,24)));
 
-    // soo much graphics code
+
+
     Shader shader("shader.vs", "shader.fs");
 
     unsigned int VBO, VAO;
@@ -345,13 +423,31 @@ int main() {
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), &vertices[0], GL_STATIC_DRAW); // Change static draw if vertices changes a lot
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), &vertices[0], GL_DYNAMIC_DRAW); // Change static draw if vertices changes a lot
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+
+    unsigned int gridVBO, gridVAO;
+    glGenVertexArrays(1, &gridVAO);
+    glGenBuffers(1, &gridVBO);
+
+    Grid grid(1000, 1000, 50.0f);
+    grid.CreateGrid();
+
+    glBindVertexArray(gridVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * gridVertices.size(), &gridVertices[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
 
     float gravity = 9.81 / 20.0f;
     const float G = 6.6743 * pow(10, -11);
@@ -366,8 +462,6 @@ int main() {
         processInput(window);
 
         glClear(GL_COLOR_BUFFER_BIT);
-        glBindVertexArray(VAO);
-
         //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         //model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -380,7 +474,21 @@ int main() {
         unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+        int vertexColourLoc = glGetUniformLocation(shader.ID, "colour");
+        glUniform4f(vertexColourLoc, 0.3f, 0.3f, 0.3f, 1.0f);
 
+        gridVertices = grid.UpdateGrid(gridVertices, objs);
+
+        // upload updated grid vertex positions to the GPU so Draw() uses the new data
+        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * gridVertices.size(), &gridVertices[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(gridVAO);
+        grid.Draw(shader);
+
+        glBindVertexArray(VAO);
+        glUniform4f(vertexColourLoc, 1.0f, 1.0f, 1.0f, 1.0f);
         for(Object& obj : objs) {
             for(Object& obj2 : objs) {
                 if (&obj == &obj2) {continue;};
@@ -390,7 +498,7 @@ int main() {
                 float hyp = sqrt(dx*dx + dy*dy);
                 float distance = sqrt(hyp*hyp + dz*dz);
                 std::vector<float> direction = {dx / distance, dy / distance, dz / distance};
-                if (distance < obj.radius *10) {continue;}
+                if (distance < obj.radius *4) {continue;}
                 distance *= 1000;
 
                 float gf = (G * obj.mass * obj2.mass) / (distance * distance);
@@ -402,6 +510,7 @@ int main() {
             obj.updatePos();
             obj.draw(shader);
         }
+
 
 
 
