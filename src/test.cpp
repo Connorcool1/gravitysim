@@ -39,6 +39,8 @@ class Object {
     float radius;
     float mass;
 
+    bool light = false;
+
     Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass) {
         this->pos = pos;
         this->vel = vel;

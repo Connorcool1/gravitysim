@@ -14,11 +14,15 @@ const float windowHeight = 1000;
 const float windowWidth = 1000;
 
 std::vector<glm::vec3> vertices;
-std::vector<glm::vec3> normals;
 std::vector<unsigned int> indices;
+
+std::vector<glm::vec3> normals;
+
 std::vector<unsigned int> lineIndices;
 
 std::vector<glm::vec3> gridVertices;
+
+std::vector<glm::vec3> lightPositions;
 
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 1000.0f);
@@ -30,6 +34,8 @@ float pitch = 0.0f;
 float lastX =  1000.0f / 2.0f;
 float lastY =  1000.0f / 2.0f;
 bool firstMouse = true;
+
+bool resetSim = false;
 
 // time
 float deltaTime = 0.0f;
@@ -47,11 +53,14 @@ class Object {
     float radius;
     float mass;
 
-    Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass) {
+    bool light;
+
+    Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass, bool light = false) {
         this->pos = pos;
         this->vel = vel;
         this->radius = radius;
         this->mass = mass;
+        this->light = light;
         build();
     }
 
@@ -75,6 +84,15 @@ class Object {
     };
 
     void draw(Shader &shader) {
+        unsigned int lightLoc = glGetUniformLocation(shader.ID, "light");
+        glUniform1i(lightLoc, light ? 1 : 0);
+
+        if (!light) {
+            glm::vec3 lightPos = lightPositions[0];
+            shader.setVec3("lightPos", lightPos);
+        }
+
+
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
         //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -87,7 +105,7 @@ class Object {
 
     static std::vector<Object> generate(int amount, 
                          std::vector<float> posRange = std::vector<float>{0.0f,500.0f,0.0f,500.0f,0.0f,500.0f},
-                         std::vector<float> velRange = std::vector<float>{0, 0}, 
+                         std::vector<float> velRange = std::vector<float>{0, 0, 0}, 
                          std::vector<float> rRange = std::vector<float>{4.00f, 10.0f}, 
                                       float mass = 6.0f*pow(10.0f, 22.0f)) {
         std::vector<Object> balls;
@@ -122,14 +140,17 @@ class Object {
             }
             float vx = rv(rng);
             float vy = rv(rng);
-            balls.emplace_back(std::vector<float>{x, y, z}, std::vector<float>{vx, vy}, radius, mass);
+            float vz = rv(rng);
+            balls.emplace_back(std::vector<float>{x, y, z}, std::vector<float>{vx, vy, vz}, radius, mass);
         }
         return balls;
     }
 
     private:
     int startIndex = 0;
+    int indexCount = 0;
     int vertexCount = 0;
+    int startVertex = 0;
 
     int vCount = 100;
     int sectorCount = 50;
@@ -168,6 +189,8 @@ class Object {
     }
 
     void buildSphere() {
+        startVertex = static_cast<int>(vertices.size());
+
         float x, y, z, xy;
         float nx, ny, nz, lengthInv = 1.0f / radius;
         float s, t;
@@ -191,13 +214,14 @@ class Object {
                 vertices.push_back(glm::vec3(x,y,z));
 
                 // normalized vertex normal (nx, ny, nz)
-                // nx = x * lengthInv;
-                // ny = y * lengthInv;
-                // nz = z * lengthInv;
-                // normals.push_back(glm::vec3(nx,ny,nz));
+                nx = x * lengthInv;
+                ny = y * lengthInv;
+                nz = z * lengthInv;
+                normals.push_back(glm::vec3(nx,ny,nz));
                 }
         }
 
+        startIndex = static_cast<int>(indices.size());
 
         int k1, k2;
         for(int i = 0; i < stackCount; ++i)
@@ -235,6 +259,9 @@ class Object {
                 }
             }
         }
+
+        vertexCount = static_cast<int>(vertices.size()) - startVertex;
+        indexCount = static_cast<int>(indices.size()) - startIndex;
     }
 
     void collision() {
@@ -296,6 +323,7 @@ class Grid {
     std::vector<glm::vec3> UpdateGrid(std::vector<glm::vec3> vertices, std::vector<Object> objs) {
         // iterate by reference so we modify the vector elements rather than a copy
         for (glm::vec3 &vertice : vertices) {
+            vertice.y = 0.0f; // reset y displacement
             glm::vec3 totalDisplacement(0.0f);
             for (const auto &obj : objs) {
 
@@ -305,11 +333,13 @@ class Grid {
                 float rs = (2*G*obj.mass)/(c*c);
 
                 float dz = 2 * sqrt(rs * (distance_m - rs));
+
                 totalDisplacement.y += dz * 2.0f;
             }
             // write the computed displacement back into the vertex
-            vertice.y -= totalDisplacement.y;
+            vertice.y = totalDisplacement.y - 600.0f; // offset to center grid
         }
+
         return vertices;
     }
 
@@ -338,6 +368,8 @@ void processInput(GLFWwindow *window) {
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (!glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        resetSim = true;
 
 }
 
@@ -395,6 +427,8 @@ int main() {
         return -1;
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -407,12 +441,13 @@ int main() {
     //     Object(std::vector<float>{800,700}, std::vector<float>{0.0f,0.0f}, 5.0f, 6 * pow(10, 22))
 
     std::vector<Object> objs;
-    // };
-    // make random balls
-    //std::vector<Object> objs = Object::generate(1);
-    objs.emplace_back(Object(std::vector<float>{0,0,-5.0f}, std::vector<float>{0,0}, 5.0f, 6 * pow(10,24)));
-    //objs.emplace_back(Object(std::vector<float>{400,500}, std::vector<float>{0,0}, 0.03f, 6 * pow(10,24)));
 
+    // make random balls
+    //objs = Object::generate(100);
+    objs.emplace_back(Object(std::vector<float>{300,1,50}, std::vector<float>{0,0,100}, 5.0f, 4 * pow(10,23), true));
+    objs.emplace_back(Object(std::vector<float>{-300,1,50}, std::vector<float>{0,0,-100}, 5.0f, 6 * pow(10,23)));
+    
+    std::vector<Object> reset = objs;
 
 
     Shader shader("shader.vs", "shader.fs");
@@ -427,6 +462,15 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    unsigned int normalVBO;
+    glGenBuffers(1, &normalVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), &normals[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    
+
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -449,19 +493,26 @@ int main() {
     glBindVertexArray(0);
 
 
+
     float gravity = 9.81 / 20.0f;
     const float G = 6.6743 * pow(10, -11);
 
     shader.use();
 
     while (!glfwWindowShouldClose(window)) {
+        if (resetSim) {
+            objs = reset;
+            resetSim = false;
+        }
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window);
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         //model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -489,30 +540,39 @@ int main() {
 
         glBindVertexArray(VAO);
         glUniform4f(vertexColourLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+        lightPositions.clear();
         for(Object& obj : objs) {
             for(Object& obj2 : objs) {
                 if (&obj == &obj2) {continue;};
                 float dx = obj2.pos[0] - obj.pos[0];
                 float dy = obj2.pos[1] - obj.pos[1];
                 float dz = obj2.pos[2] - obj.pos[2];
-                float hyp = sqrt(dx*dx + dy*dy);
-                float distance = sqrt(hyp*hyp + dz*dz);
+                //std::cout << "Delta Position: (" << dx << ", " << dy << ", " << dz << ")\n";
+                float hyp = sqrt(abs(dx*dx + dy*dy));
+                //std::cout << "Hypotenuse: " << hyp << "\n";
+                float distance = sqrt(abs(hyp*hyp + dz*dz));
                 std::vector<float> direction = {dx / distance, dy / distance, dz / distance};
                 if (distance < obj.radius *4) {continue;}
                 distance *= 1000;
 
-                float gf = (G * obj.mass * obj2.mass) / (distance * distance);
+                float gf = ( (G * obj2.mass) / (distance*distance));
+                gf *= obj.mass;
 
                 float totalAcc = gf / obj.mass;
+
                 std::vector<float> acc = {totalAcc * direction[0], totalAcc * direction[1], totalAcc * direction[2]};
                 obj.accelerate(acc[0], acc[1], acc[2]);
             }
+            //std::cout << "Object Position: (" << obj.pos[0] << ", " << obj.pos[1] << ", " << obj.pos[2] << ")\n";
             obj.updatePos();
+            if (obj.pos[2] < -100000.0f || obj.pos[2] > 10000.0f) {
+                std::cout << "Object out of bounds\n";
+            }
+            if (obj.light) {
+                lightPositions.push_back(obj.GetPos());
+            }
             obj.draw(shader);
         }
-
-
-
 
         glfwPollEvents();
         glfwSwapBuffers(window);
