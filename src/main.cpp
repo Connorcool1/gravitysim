@@ -13,10 +13,8 @@
 const float windowHeight = 1000;
 const float windowWidth = 1000;
 
-std::vector<glm::vec3> vertices;
-std::vector<unsigned int> indices;
-
-std::vector<glm::vec3> normals;
+//std::vector<glm::vec3> vertices;
+//std::vector<unsigned int> indices;
 
 std::vector<unsigned int> lineIndices;
 
@@ -45,6 +43,22 @@ const float PI = 3.141592654;
 const float c = 299792458; // speed of light in m/s
 const float G = 6.67430e-11; // gravitational constant
 
+void CreateBuffers(GLuint& VAO, GLuint& VBO, const glm::vec3* vertices, size_t vertexCount) {
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(glm::vec3), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
 class Object {
     public:
 
@@ -54,6 +68,12 @@ class Object {
     float mass;
 
     bool light;
+
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<unsigned int> indices;
+
+    GLuint VAO, VBO;
 
     Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass, bool light = false) {
         this->pos = pos;
@@ -84,6 +104,8 @@ class Object {
     };
 
     void draw(Shader &shader) {
+        unsigned int gridLoc = glGetUniformLocation(shader.ID, "grid");
+        glUniform1i(gridLoc, 0);
         unsigned int lightLoc = glGetUniformLocation(shader.ID, "light");
         glUniform1i(lightLoc, light ? 1 : 0);
 
@@ -101,6 +123,7 @@ class Object {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data());
+        //glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     }
 
     static std::vector<Object> generate(int amount, 
@@ -158,10 +181,25 @@ class Object {
     float dampening = 150;
     
     bool allowCollision = false;
+
     
     void build() {
         // buildCircle();
         buildSphere();
+        CreateBuffers(VAO, VBO, vertices.data(), vertexCount);
+
+        // normals
+        if (!normals.empty()) {
+            glBindVertexArray(VAO);
+            GLuint normalVBO_local;
+            glGenBuffers(1, &normalVBO_local);
+            glBindBuffer(GL_ARRAY_BUFFER, normalVBO_local);
+            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
     }
 
     void buildCircle() {
@@ -217,7 +255,7 @@ class Object {
                 nx = x * lengthInv;
                 ny = y * lengthInv;
                 nz = z * lengthInv;
-                normals.push_back(glm::vec3(nx,ny,nz));
+                this->normals.push_back(glm::vec3(nx,ny,nz));
                 }
         }
 
@@ -260,8 +298,8 @@ class Object {
             }
         }
 
-        vertexCount = static_cast<int>(vertices.size()) - startVertex;
-        indexCount = static_cast<int>(indices.size()) - startIndex;
+        vertexCount = static_cast<int>(vertices.size());
+        indexCount = static_cast<int>(indices.size());
     }
 
     void collision() {
@@ -337,13 +375,16 @@ class Grid {
                 totalDisplacement.y += dz * 2.0f;
             }
             // write the computed displacement back into the vertex
-            vertice.y = totalDisplacement.y - 600.0f; // offset to center grid
+            vertice.y = totalDisplacement.y - 300.0f; // offset to center grid
         }
 
         return vertices;
     }
 
     void Draw(Shader &shader) {
+        unsigned int gridLoc = glGetUniformLocation(shader.ID, "grid");
+        glUniform1i(gridLoc, 1);
+
         glm::mat4 model = glm::mat4(1.0f);
 
         unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
@@ -444,43 +485,20 @@ int main() {
 
     // make random balls
     //objs = Object::generate(100);
-    objs.emplace_back(Object(std::vector<float>{300,1,50}, std::vector<float>{0,0,100}, 5.0f, 4 * pow(10,23), true));
-    objs.emplace_back(Object(std::vector<float>{-300,1,50}, std::vector<float>{0,0,-100}, 5.0f, 6 * pow(10,23)));
-    
+    objs.emplace_back(Object(std::vector<float>{0,1,50}, std::vector<float>{0,0,0}, 20.0f, 4 * pow(10,23), true));
+    objs.emplace_back(Object(std::vector<float>{-200,1,50}, std::vector<float>{0,0,-300}, 5.0f, 6 * pow(10,21)));
+    objs.emplace_back(Object(std::vector<float>{200,1,50}, std::vector<float>{0,0,300}, 5.0f, 6 * pow(10,22)));
+
     std::vector<Object> reset = objs;
 
 
     Shader shader("shader.vs", "shader.fs");
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), &vertices[0], GL_DYNAMIC_DRAW); // Change static draw if vertices changes a lot
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    unsigned int normalVBO;
-    glGenBuffers(1, &normalVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), &normals[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    
-
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-
     unsigned int gridVBO, gridVAO;
     glGenVertexArrays(1, &gridVAO);
     glGenBuffers(1, &gridVBO);
 
-    Grid grid(1000, 1000, 50.0f);
+    Grid grid(5000, 5000, 70.0f);
     grid.CreateGrid();
 
     glBindVertexArray(gridVAO);
@@ -538,7 +556,6 @@ int main() {
         glBindVertexArray(gridVAO);
         grid.Draw(shader);
 
-        glBindVertexArray(VAO);
         glUniform4f(vertexColourLoc, 1.0f, 1.0f, 1.0f, 1.0f);
         lightPositions.clear();
         for(Object& obj : objs) {
@@ -571,6 +588,8 @@ int main() {
             if (obj.light) {
                 lightPositions.push_back(obj.GetPos());
             }
+
+            glBindVertexArray(obj.VAO);
             obj.draw(shader);
         }
 
@@ -582,3 +601,4 @@ int main() {
     glfwTerminate();
     return 0;
 }
+

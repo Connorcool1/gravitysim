@@ -8,13 +8,17 @@ in vec3 FragPos;
 uniform vec3 lightPos;
 
 uniform bool light;
+uniform bool grid;
 
 void main() {
     if (light) {
         FragColor = vec4(1.0);
     }
+    else if (grid) {
+        FragColor = 0.2 * vec4(1.0);
+    }
     else {
-        float ambientStrength = 0.1;
+        float ambientStrength = 0.2;
         vec3 ambient = ambientStrength * vec3(1.0, 1.0, 1.0);
                 
         vec3 norm = normalize(Normal);
