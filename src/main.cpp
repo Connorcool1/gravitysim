@@ -61,6 +61,7 @@ void CreateBuffers(GLuint& VAO, GLuint& VBO, const glm::vec3* vertices, size_t v
 
 class Object {
     public:
+    glm::vec3 colour;
 
     std::vector<float> pos;
     std::vector<float> vel;
@@ -75,11 +76,12 @@ class Object {
 
     GLuint VAO, VBO;
 
-    Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass, bool light = false) {
+    Object(std::vector<float> pos, std::vector<float> vel, float radius, float mass, glm::vec3 colour = glm::vec3(0,0,0), bool light = false) {
         this->pos = pos;
         this->vel = vel;
         this->radius = radius;
         this->mass = mass;
+        this->colour = colour;
         this->light = light;
         build();
     }
@@ -102,18 +104,22 @@ class Object {
         this->pos[2] += vel[2] / dampening;
         if (allowCollision) { collision(); }
     };
+    void setColour(float r, float g, float b) {
+        this->colour = glm::vec3(r, g, b);
+    }
 
     void draw(Shader &shader) {
         unsigned int gridLoc = glGetUniformLocation(shader.ID, "grid");
         glUniform1i(gridLoc, 0);
         unsigned int lightLoc = glGetUniformLocation(shader.ID, "light");
         glUniform1i(lightLoc, light ? 1 : 0);
-
         if (!light) {
             glm::vec3 lightPos = lightPositions[0];
             shader.setVec3("lightPos", lightPos);
         }
 
+        unsigned int colorLoc = glGetUniformLocation(shader.ID, "vertexColor");
+        glUniform3f(colorLoc, colour[0], colour[1], colour[2]);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
@@ -178,11 +184,11 @@ class Object {
     int vCount = 100;
     int sectorCount = 50;
     int stackCount = 50;    
-    float dampening = 150;
+    float dampening = 800;
     
     bool allowCollision = false;
 
-    
+
     void build() {
         // buildCircle();
         buildSphere();
@@ -358,12 +364,17 @@ class Grid {
         }
     }
 
+    float gridShift = -700.0f;
     std::vector<glm::vec3> UpdateGrid(std::vector<glm::vec3> vertices, std::vector<Object> objs) {
+        float totalMass = 0.0f;
+        float smth = 0.0f;
         // iterate by reference so we modify the vector elements rather than a copy
         for (glm::vec3 &vertice : vertices) {
-            vertice.y = 0.0f; // reset y displacement
+            vertice.y = -gridShift; // reset y displacement
             glm::vec3 totalDisplacement(0.0f);
             for (const auto &obj : objs) {
+                totalMass += obj.mass;
+                smth += obj.mass * (obj.pos[1] + 500.0f); 
 
                 glm::vec3 toObject = obj.GetPos() - vertice;
                 float distance = glm::length(toObject);
@@ -375,9 +386,10 @@ class Grid {
                 totalDisplacement.y += dz * 2.0f;
             }
             // write the computed displacement back into the vertex
-            vertice.y = totalDisplacement.y - 300.0f; // offset to center grid
+            vertice.y = objs[0].pos[1] - 1000.0f;
+            vertice.y += totalDisplacement.y - gridShift - objs[0].pos[1] - 500.0f; // offset to center grid
         }
-
+        gridShift = smth / totalMass;
         return vertices;
     }
 
@@ -485,9 +497,17 @@ int main() {
 
     // make random balls
     //objs = Object::generate(100);
-    objs.emplace_back(Object(std::vector<float>{0,1,50}, std::vector<float>{0,0,0}, 20.0f, 4 * pow(10,23), true));
-    objs.emplace_back(Object(std::vector<float>{-200,1,50}, std::vector<float>{0,0,-300}, 5.0f, 6 * pow(10,21)));
-    objs.emplace_back(Object(std::vector<float>{200,1,50}, std::vector<float>{0,0,300}, 5.0f, 6 * pow(10,22)));
+    float center = -100.0f;
+    objs.emplace_back(Object(std::vector<float>{center,1,center}, std::vector<float>{0,0,0}, 100.0f, 2 * pow(10,25), glm::vec3(0, 0, 0), true));
+    objs.emplace_back(Object(std::vector<float>{center-500,1,center}, std::vector<float>{0,0,-1500}, 5.0f, 6 * pow(10,21), glm::vec3(0.8f, 0, 0)));
+    objs.emplace_back(Object(std::vector<float>{center+500,1,center}, std::vector<float>{0,0,1500}, 10.0f, 6 * pow(10,22), glm::vec3(0.5f, 0.5f, 0)));
+    objs.emplace_back(Object(std::vector<float>{center,1,center+500}, std::vector<float>{-1500,0,0}, 10.0f, 6 * pow(10,22), glm::vec3(0, 0, 0.8f)));
+    objs.emplace_back(Object(std::vector<float>{center,1,center-500}, std::vector<float>{1500,0,0}, 10.0f, 6 * pow(10,22), glm::vec3(0, 0.8f, 0)));
+
+    center = 1500.0f;
+    objs.emplace_back(Object(std::vector<float>{center,1,center}, std::vector<float>{-600,0,300}, 30.0f, 2 * pow(10,24), glm::vec3(0, 0, 0), true));
+    objs.emplace_back(Object(std::vector<float>{center-100,1,center}, std::vector<float>{-600,0,-700}, 5.0f, 6 * pow(10,21), glm::vec3(0.8f, 0, 0)));
+    objs.emplace_back(Object(std::vector<float>{center+100,1,center}, std::vector<float>{-600,0,1300}, 10.0f, 6 * pow(10,22), glm::vec3(0.5f, 0.5f, 0)));
 
     std::vector<Object> reset = objs;
 
@@ -498,7 +518,7 @@ int main() {
     glGenVertexArrays(1, &gridVAO);
     glGenBuffers(1, &gridVBO);
 
-    Grid grid(5000, 5000, 70.0f);
+    Grid grid(5000, 5000, 140.0f);
     grid.CreateGrid();
 
     glBindVertexArray(gridVAO);
@@ -558,6 +578,8 @@ int main() {
 
         glUniform4f(vertexColourLoc, 1.0f, 1.0f, 1.0f, 1.0f);
         lightPositions.clear();
+        unsigned int viewPosLoc = glGetUniformLocation(shader.ID, "viewPos");
+        glUniform3f(viewPosLoc, cameraPos[0], cameraPos[1], cameraPos[2]);
         for(Object& obj : objs) {
             for(Object& obj2 : objs) {
                 if (&obj == &obj2) {continue;};
