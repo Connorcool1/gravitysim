@@ -1,4 +1,5 @@
 **Gravity Simulator**
+- 
 Complex project that I took for fun to learn C++. Shows planets of varying masses orbiting one another using real physics, new planets may be added in and the effects of this can be seen. Includes a spacetime warp to help visualise the gravity. Inlcudes working lighting.
 
 Examples:
